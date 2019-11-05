@@ -1,56 +1,56 @@
 apply plugin: 'com.android.application'
 
-static def gitSha() {
-    return 'git rev-parse --short HEAD'.execute().text.trim()
-}
+//static def gitSha() {
+//    return 'git rev-parse --short HEAD'.execute().text.trim()
+//}
 
 def versionRewrite = 2
 def versionRelease = 5
 
 android {
-    signingConfigs {
-        release {
-        }
-    }
-    def signingPropFile = new File(System.properties['user.home'], ".appconfig/eu.thedarken.wl/signing.properties")
-    if (signingPropFile.canRead()) {
-        Properties signingProps = new Properties()
-        signingProps.load(new FileInputStream(signingPropFile))
-        signingConfigs {
-            release {
-                storeFile new File(signingProps['release.storePath'])
-                keyAlias signingProps['release.keyAlias']
-                storePassword signingProps['release.storePassword']
-                keyPassword signingProps['release.keyPassword']
-            }
-        }
-    }
-
-    compileSdkVersion 7
-    buildToolsVersion "25.0.3"
+//    signingConfigs {
+//        release {
+//        }
+//    }
+//    def signingPropFile = new File(System.properties['user.home'], ".appconfig/eu.thedarken.wl/signing.properties")
+//    if (signingPropFile.canRead()) {
+//        Properties signingProps = new Properties()
+//        signingProps.load(new FileInputStream(signingPropFile))
+//        signingConfigs {
+//            release {
+//                storeFile new File(signingProps['release.storePath'])
+//                keyAlias signingProps['release.keyAlias']
+//                storePassword signingProps['release.storePassword']
+//                keyPassword signingProps['release.keyPassword']
+//            }
+//        }
+//    }
+    flavorDimensions "default"
+    compileSdkVersion 27
+    buildToolsVersion "28.0.3"
 
     defaultConfig {
-        minSdkVersion 7
-        targetSdkVersion 7
+        minSdkVersion 27
+        targetSdkVersion 27
 
         versionCode versionRewrite * 10000 + versionRelease
         versionName "${versionRewrite}.${versionRelease}"
     }
 
     buildTypes {
-        release {
-            signingConfig signingConfigs.release
-            minifyEnabled true
-            proguardFiles 'proguard.cfg'
-        }
-        applicationVariants.all { variant ->
-            if (variant.buildType.name == "release") {
-                variant.outputs.each { output ->
-                    def file = output.outputFile
-                    output.outputFile = new File(file.parent, applicationId + "-v" + versionName + "-" + versionCode + "-" + gitSha() + ".apk")
-                }
-            }
-        }
+//        release {
+//            signingConfig signingConfigs.release
+//            minifyEnabled true
+//            proguardFiles 'proguard.cfg'
+//        }
+//        applicationVariants.all { variant ->
+//            if (variant.buildType.name == "release") {
+//                variant.outputs.each { output ->
+//                    def file = output.outputFile
+//                    output.outputFile = new File(file.parent, applicationId + "-v" + versionName + "-" + versionCode + "-" + gitSha() + ".apk")
+//                }
+//            }
+//        }
     }
     productFlavors {
         free {

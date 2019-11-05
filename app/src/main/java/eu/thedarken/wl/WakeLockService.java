@@ -3,11 +3,14 @@ package eu.thedarken.wl;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -51,20 +54,54 @@ public class WakeLockService extends Service {
 
         use_notifications = settings.getBoolean("notifaction.enabled", true);
         if (use_notifications) {
-            Notification note = new Notification(R.drawable.note, "WakeLock active!", System.currentTimeMillis());
-            Intent i = new Intent(this, MainActivity.class);
 
-            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-            PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
-
-            note.setLatestEventInfo(this, "WakeLock", "Holding: " + lock.getType(), pi);
-            note.flags |= Notification.FLAG_NO_CLEAR;
-            note.flags |= Notification.FLAG_FOREGROUND_SERVICE;
-            note.flags |= Notification.FLAG_ONGOING_EVENT;
-            this.startForeground(NOTIFICATION_ID, note);
+            this.startForeground(NOTIFICATION_ID, createNotification());
         }
 
+    }
+
+    private Notification createNotification() {
+        String notificationChannelId = "WAKELOCK SERVICE CHANNEL";
+
+        // depending on the Android API that we're dealing with we will have
+        // to use a specific method to create the notification
+        //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationChannel channel = new NotificationChannel(
+                notificationChannelId,
+                "WakeLock Service notifications channel",
+                NotificationManager.IMPORTANCE_HIGH
+        );
+
+        {
+            channel.setDescription("WakeLock Service channel");
+            channel.enableLights(true);
+            channel.setLightColor(Color.RED);
+            channel.enableVibration(true);
+            long[] a = {100, 200, 300, 400, 500, 400, 300, 200, 400};
+            channel.setVibrationPattern(a);
+
+        }
+        notificationManager.createNotificationChannel(channel);
+
+        Intent i = new Intent(this, MainActivity.class);
+
+        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+        PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
+
+        Notification.Builder builder = new Notification.Builder(this, notificationChannelId);
+        builder.setAutoCancel(false);
+        builder.setTicker("WakeLock active!");
+        builder.setContentTitle("WhatsApp Notification");
+        builder.setContentText("You have a new message");
+        builder.setOngoing(true);
+        return builder
+
+                .setSmallIcon(R.drawable.note)
+                .setContentIntent(pi)
+                //.setPriority(Notification.PRIORITY_HIGH) // for under android 26 compatibility
+                .build();
     }
 
     public void setLock(Type locktype) {
